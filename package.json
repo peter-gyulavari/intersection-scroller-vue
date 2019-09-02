@@ -1,16 +1,33 @@
 {
-  "name": "intersection-scroller",
-  "version": "0.1.0",
-  "private": true,
+  "name": "intersection-scroller-vue",
+  "version": "0.3.4",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "build-bundle": "vue-cli-service build --mode production --target lib --name intersection-scroller-vue ./src/components/index.js"
   },
+  "keywords": [
+    "Vue",
+    "infinite scroll",
+    "intersection observer",
+    "onscreen",
+    "offscreen"
+  ],
   "dependencies": {
+    "body-scroll-lock": "^2.6.4",
     "core-js": "^2.6.5",
+    "intersection-observer": "^0.7.0",
     "vue": "^2.6.10"
   },
+  "main": "./dist/intersection-scroller-vue.common.js",
+  "files": [
+    "dist/*",
+    "src/*",
+    "public/*",
+    "*.json",
+    "*.js"
+  ],
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.3",
     "@vue/cli-plugin-eslint": "^3.0.3",

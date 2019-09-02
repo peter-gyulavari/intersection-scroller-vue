@@ -1,0 +1,165 @@
+# intersection-scroller-vue
+Infinite scrolling implemented with intersection observer instead of scroll events.
+"The Intersection Observer API provides a way to asynchronously observe changes in the intersection of a target element with an ancestor element or with a top-level document's viewport."
+ You can read more about Intersection Observer on the following link -> (https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
+
+The module's aim is to enable loading paginated data from your server, displaying it in a grid based layout, only filling your elements with data that are onscreen.
+
+*Features:*
+
+- Works in Chrome
+- Works in Firefox
+- Works in Microsoft Edge
+- Works in IE
+- It might work in other browsers too, but testing is WIP for other browsers
+- Automatically load more data when the user scrolls to the bottom, or manually clicks on the arrow if *intersection observer is not supported*
+- You can add your custom component in the template slot be it simple divs, cards, etc.
+- Only elements onscreen is filled with data, your offscreen elements will be empty. When offscreen elements come into the viewport they will be filled with data automatically.
+
+
+*In case intersection observer is not supported on the current platform, some features won't work*
+
+## Install
+```
+$ npm install intersection-scroller-vue
+```
+
+## Usage
+*Properties:*
+
+- list: This property is your array where your data is
+- itemsFn: In this function you have to provide the method of getting more data from the server, or any other place. It works asynchronously.
+  This is the place where you have to do any modifications to the returned data (ex.: make a vuex store commit, map values to new ones etc.) and push your data
+  to the array you specified in the list property be it in the component, or vuex, or anywhere accessible. You also have to return the currently loaded data, 
+  so the intersection scroller component can observe the newly added data by their indexes.
+- indexBy: name of the property in your list to find index by, should be unique, default: "id"
+- setVisible: returns the indexes in your list and an isVisible property indicating the objects in your list at the corresponding index should be visible or not.
+    You can then map your list's isVisible properties by the indexes. This is required so offscreen data is not filled with anything. //TODO: make the component itself do this, to reduce necessary steps for usage
+- containerClass: classes the scrollContainer div should have, OPTIONAL
+- loaderClass: classes the loading / noMoreData message container should have, OPTIONAL
+- itemsCount: the max count of the data
+- itemWidth: the width of each individual element in the scoped slot
+- itemHeight: the height of each individual element in the scoped slot
+- itemOffset: This property is used so the component can calculate how many items should be in a row, and recalculate it when the screen size changes. The intersection observer has to know the last row so it can load more data thus this step is required. If items / rows showing incorrectly or disappearing, this is the property you should play around with. If you don't have any padding, margin this can be set to 0, otherwise experimenting with it is recommended. //TODO: make it work without this property
+- itemsPerPage: You have to provide how many items you have in a single page, in your pagination.
+- noMoreMessage: the message to be shown at the end of the list when there is no more data. default is : "No more data..." OPTIONAl
+
+*Template slot:*
+
+The infinite scroller component returns each individual item in slot-scope
+You have to provide :key as index and :id as item-${index}
+If you want your data to be filled only for onscreen items wrap it in a div and check for visiblity  // TODO: do this inside the component
+
+```html
+<template slot-scope="{ item, index }">
+        <q-card
+          :style="`width:${itemWidth}px; height:${itemHeight}px;`"
+          class="q-ma-sm"
+          :key="index"   <--- required
+          :id="`item-${index}`" <--- required
+        >
+          <div v-if="item.isVisible">  <---- with this, only onscreen items will be filled with data
+            <p class="text-center">{{ item.label }}</p>
+            <q-img basic width="300px" :src="item.imgSrc" alt="macskás kép" />
+          </div>
+        </q-card>
+      </template>    
+```
+## Usage example
+```html
+<template>
+  <q-page>
+    <intersection-scroller
+      :list="bigList"
+      :itemsFn="getItems"
+      :setVisible="setVisiblity"
+      containerClass="row justify-center"
+      loaderClass="row justify-center q-mt-lg"
+      :itemsCount="maxLength"
+      :itemWidth="itemWidth"
+      :itemHeight="itemHeight"
+      :itemOffset="itemOffset"
+      :itemsPerPage="pageCount"
+      :noMoreMessage="noMoreMsg",
+      indexBy="label"
+    >
+      <template slot-scope="{ item, index }">
+        <q-card
+          :style="`width:${itemWidth}px; height:${itemHeight}px;`"
+          class="q-ma-sm"
+          :key="index"
+          :id="`item-${index}`"
+        >
+          <div v-if="item.isVisible">
+            <p class="text-center">{{ item.label }}</p>
+            <q-img basic width="300px" :src="item.imgSrc" alt="macskás kép" />
+          </div>
+        </q-card>
+      </template>
+    </intersection-scroller>
+  </q-page>
+</template>
+```
+
+```
+<script>
+```
+```js
+import intersectionScroller from "intersection-scroller-vue";
+export default {
+  components: {
+    intersectionScroller
+  },
+  data() {
+    return {
+      bigList: [],
+      maxLength: 120,
+      itemWidth: 300,
+      itemHeight: 500,
+      itemOffset: 100,
+      pageCount: 12,
+      noMoreMsg: "No more items..."
+    };
+  },
+  methods: {
+    getCatImg() {
+      const randomNum = () => {
+        return Math.floor(Math.random() * 100000);
+      };
+      const url = "https://source.unsplash.com/collection/139386/100x100/?sig=";
+      return url + randomNum();
+    },
+    async getItems() {
+      const newData = [];
+      const length = this.bigList.length;
+      for (let i = 0; i < this.pageCount; i++) {
+        newData.push({
+          label: `CARD ${i + length}`,
+          isVisible: true,
+          imgSrc: this.getCatImg()
+        });
+        this.bigList.push({
+          label: `CARD ${i + length}`,
+          isVisible: true,
+          imgSrc: this.getCatImg()
+        });
+      }
+      return newData;
+    },
+    setVisiblity(elements) {
+      elements.forEach(el => {
+        this.bigList[el.index].isVisible = el.isVisible;
+      });
+    }
+  }
+};
+```
+```
+</script>
+```
+
+## Demo
+Check out the demo on the following link -> https://intersectionscroller.now.sh (images might not load properly due to external source)
+
+
+
