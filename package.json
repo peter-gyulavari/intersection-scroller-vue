@@ -1,12 +1,6 @@
 {
   "name": "intersection-scroller-vue",
-  "version": "0.3.4",
-  "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "build-bundle": "vue-cli-service build --mode production --target lib --name intersection-scroller-vue ./src/components/index.js"
-  },
+  "version": "0.3.9",
   "keywords": [
     "Vue",
     "infinite scroll",
@@ -20,42 +14,7 @@
     "intersection-observer": "^0.7.0",
     "vue": "^2.6.10"
   },
-  "main": "./dist/intersection-scroller-vue.common.js",
-  "files": [
-    "dist/*",
-    "src/*",
-    "public/*",
-    "*.json",
-    "*.js"
-  ],
-  "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.0.3",
-    "@vue/cli-plugin-eslint": "^3.0.3",
-    "@vue/cli-service": "^3.0.3",
-    "babel-eslint": "^10.0.1",
-    "eslint": "^5.16.0",
-    "eslint-plugin-vue": "^5.0.0",
-    "vue-template-compiler": "^2.6.10"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "rules": {},
-    "parserOptions": {
-      "parser": "babel-eslint"
-    }
-  },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
-    }
-  },
+  "main": "./src/intersection-scroller.vue",
   "browserslist": [
     "> 1%",
     "last 2 versions"
