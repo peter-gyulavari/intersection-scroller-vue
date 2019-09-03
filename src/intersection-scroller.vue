@@ -1,12 +1,13 @@
 <template>
   <div>
     <div ref="scrollContainer" id="scrollContainer" :class="containerClass">
-      <slot v-for="(item,index) in list" :ref="index" :id="index" :index="index" :item="item"></slot>
+      <slot v-for="(item,index) in innerList" :ref="index" :id="index" :index="index" :item="item"></slot>
     </div>
 
-    <div :class="loaderClass" @click="itemsFn()">
-      <q-icon v-if="hasMore" name="fas fa-chevron-down fa-2x" class="bounce q-mt-sm" />
-      <p v-else>{{noMoreMessage}}</p>
+    <div :class="iconContainerClass">
+      <i v-if="loading" :class="loadingIconClass"></i>
+      <i v-if="hasMore && !loading" :class="loadMoreClass" @click="$emit('itemsFn')" />
+      <p v-if="!hasMore && !loading">{{noMoreMessage}}</p>
     </div>
   </div>
 </template>
@@ -14,7 +15,6 @@
 <script>
 //eslint-disable-next-line
 require("intersection-observer");
-import { disableBodyScroll, enableBodyScroll } from "body-scroll-lock";
 export default {
   name: "IntersectionScroller",
   props: {
@@ -22,20 +22,22 @@ export default {
       type: Array,
       required: true
     },
-    itemsFn: {
-      type: Function,
-      required: true
-    },
-    setVisible: {
-      type: Function,
-      required: true
-    },
     containerClass: {
       type: String,
       required: false,
       default: ""
     },
-    loaderClass: {
+    iconContainerClass: {
+      type: String,
+      required: false,
+      default: ""
+    },
+    loadingIconClass: {
+      type: String,
+      required: false,
+      default: ""
+    },
+    loadMoreClass: {
       type: String,
       required: false,
       default: ""
@@ -66,30 +68,58 @@ export default {
       type: String,
       required: false,
       default: "id"
+    },
+    bodyScroll: {
+      type: Boolean,
+      required: false,
+      default: true
+    },
+    listChanged: {
+      type: Boolean,
+      required: true
     }
   },
   data() {
     return {
       observer: null,
       lastItemsPerRow: null,
-      hasMore: true
+      hasMore: true,
+      innerList: [],
+      loading: false
     };
   },
-  methods: {
-    async getItems() {
-      const indexes = [];
+  watch: {
+    listChanged: function() {
+      if (this.listChanged) {
+        this.loading = false;
+        const differences = this.list.filter(e => {
+          return !this.innerList.some(item => item._id === e._id);
+        });
+        this.innerList.push(...differences);
 
-      const newData = await this.itemsFn();
-      newData.forEach(data => {
-        const index = this.list.findIndex(
-          el => el[this.indexBy] === data[this.indexBy]
-        );
-        indexes.push(index);
-      });
-      return indexes;
-    },
+        this.$nextTick(() => {
+          const indexes = [];
+          const itemsPerRow = this.getItemsPerRow();
+
+          differences.forEach(element => {
+            const index = this.innerList.findIndex(
+              el => el[this.indexBy] === element[this.indexBy]
+            );
+            indexes.push(index);
+          });
+          indexes.forEach(index => {
+            if (index % itemsPerRow === 0) {
+              this.observer.observe(document.querySelector(`#item-${index}`));
+            }
+          });
+          this.$emit("updated");
+        });
+      }
+    }
+  },
+  methods: {
     hasMoreToLoad() {
-      const hasMore = this.list.length !== this.itemsCount;
+      const hasMore = this.innerList.length !== this.itemsCount;
 
       if (!hasMore) this.hasMore = false;
 
@@ -113,23 +143,13 @@ export default {
               entry.isIntersecting &&
               this.hasMoreToLoad()
             ) {
-              disableBodyScroll(this.$refs.scrollingContainer);
-              const indexes = await this.getItems();
-              enableBodyScroll(this.$refs.scrollingContainer);
-              this.$nextTick(() => {
-                indexes.forEach(index => {
-                  if (index % getRow.itemsPerRow === 0) {
-                    this.observer.observe(
-                      document.querySelector(`#item-${index}`)
-                    );
-                  }
-                });
-              });
+              this.loading = true;
+              this.$emit("itemsFn");
             }
 
             const shouldBeVisible = [];
             for (let i = 0; i < getRow.itemsPerRow; i++) {
-              if (this.list[parseInt(entryId) + i]) {
+              if (this.innerList[parseInt(entryId) + i]) {
                 shouldBeVisible.push({
                   isVisible: entry.isIntersecting,
                   index: parseInt(entryId) + i
@@ -141,7 +161,7 @@ export default {
         );
       }, options);
       const itemsPerRow = this.getItemsPerRow();
-      for (let i = 0; i < this.list.length; i += itemsPerRow) {
+      for (let i = 0; i < this.innerList.length; i += itemsPerRow) {
         this.observer.observe(document.querySelector(`#item-${i}`));
       }
       this.lastItemsPerRow = itemsPerRow;
@@ -149,7 +169,7 @@ export default {
     reconfigureObserver() {
       this.observer.disconnect();
       const itemsPerRow = this.getItemsPerRow();
-      for (let i = 0; i < this.list.length; i += itemsPerRow) {
+      for (let i = 0; i < this.innerList.length; i += itemsPerRow) {
         this.observer.observe(document.querySelector(`#item-${i}`));
       }
     },
@@ -159,7 +179,7 @@ export default {
       const allRows = Math.ceil(itemsCount / itemsPerRow);
       const currentRow = Math.floor((index * allRows) / itemsCount);
       const isLastLoadedRow =
-        Math.ceil(this.list.length / itemsPerRow) - 1 === currentRow;
+        Math.ceil(this.innerList.length / itemsPerRow) - 1 === currentRow;
 
       const allPages = Math.ceil(itemsCount / this.itemsPerPage);
       const allRowsOnPage = Math.ceil(this.itemsPerPage / itemsPerRow);
@@ -183,10 +203,16 @@ export default {
         itemsPerRow = Math.floor((width - this.itemOffset) / this.itemWidth);
       }
       return itemsPerRow;
+    },
+    setVisible(elements) {
+      elements.forEach(el => {
+        this.$set(this.innerList[el.index], "isVisible", el.isVisible);
+      });
     }
   },
   created() {
-    this.getItems();
+    this.loading = true;
+    this.$emit("itemsFn");
   },
   mounted() {
     try {
@@ -200,25 +226,3 @@ export default {
   }
 };
 </script>
-
-<style>
-.bounce {
-  animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-  0%,
-  20%,
-  50%,
-  80%,
-  100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-30px);
-  }
-  60% {
-    transform: translateY(-15px);
-  }
-}
-</style>

@@ -1,6 +1,6 @@
 {
   "name": "intersection-scroller-vue",
-  "version": "0.3.9",
+  "version": "0.5.0",
   "keywords": [
     "Vue",
     "infinite scroll",
@@ -9,7 +9,6 @@
     "offscreen"
   ],
   "dependencies": {
-    "body-scroll-lock": "^2.6.4",
     "core-js": "^2.6.5",
     "intersection-observer": "^0.7.0",
     "vue": "^2.6.10"

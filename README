@@ -39,7 +39,6 @@ $ npm install intersection-scroller-vue
 - loaderClass: classes the loading / noMoreData message container should have, OPTIONAL
 - itemsCount: the max count of the data
 - itemWidth: the width of each individual element in the scoped slot
-- itemHeight: the height of each individual element in the scoped slot
 - itemOffset: This property is used so the component can calculate how many items should be in a row, and recalculate it when the screen size changes. The intersection observer has to know the last row so it can load more data thus this step is required. If items / rows showing incorrectly or disappearing, this is the property you should play around with. If you don't have any padding, margin this can be set to 0, otherwise experimenting with it is recommended. //TODO: make it work without this property
 - itemsPerPage: You have to provide how many items you have in a single page, in your pagination.
 - noMoreMessage: the message to be shown at the end of the list when there is no more data. default is : "No more data..." OPTIONAl
