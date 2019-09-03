@@ -26,65 +26,66 @@ $ npm install intersection-scroller-vue
 
 ## Usage
 *Properties:*
-
+    
 - list: This property is your array where your data is
-- itemsFn: In this function you have to provide the method of getting more data from the server, or any other place. It works asynchronously.
-  This is the place where you have to do any modifications to the returned data (ex.: make a vuex store commit, map values to new ones etc.) and push your data
-  to the array you specified in the list property be it in the component, or vuex, or anywhere accessible. You also have to return the currently loaded data, 
-  so the intersection scroller component can observe the newly added data by their indexes.
-- indexBy: name of the property in your list to find index by, should be unique, default: "id"
-- setVisible: returns the indexes in your list and an isVisible property indicating the objects in your list at the corresponding index should be visible or not.
-    You can then map your list's isVisible properties by the indexes. This is required so offscreen data is not filled with anything. //TODO: make the component itself do this, to reduce necessary steps for usage
-- containerClass: classes the scrollContainer div should have, OPTIONAL
-- loaderClass: classes the loading / noMoreData message container should have, OPTIONAL
 - itemsCount: the max count of the data
-- itemWidth: the width of each individual element in the scoped slot
-- itemOffset: This property is used so the component can calculate how many items should be in a row, and recalculate it when the screen size changes. The intersection observer has to know the last row so it can load more data thus this step is required. If items / rows showing incorrectly or disappearing, this is the property you should play around with. If you don't have any padding, margin this can be set to 0, otherwise experimenting with it is recommended. //TODO: make it work without this property
-- itemsPerPage: You have to provide how many items you have in a single page, in your pagination.
+- itemWidth: the width of each individual element in the scoped slot.
+- itemOffset: This property is used so the component can calculate how many items should be in a row, and recalculate it when the screen size changes. The intersection observer has to know the last row so it can load more data thus this step is required. If items / rows showing incorrectly or disappearing, this is the property you should play around with. If you don't have any padding, margin this can be set to 0, otherwise experimenting with it is recommended.
+- itemsPerPage: You have to provide how many items you have in your list (eg.: max count of rows in a database table if getting data from a server)
+- listChanged: Boolean property which should be false first, and when your data changes you have to set it true
+- indexBy: name of the property in your list to find index by, should be unique, default: "id"
+- containerClass: classes the scrollContainer div should have, OPTIONAL
+- iconContainerClass: classes the container below your scrollingContainer should have
+- loadingIconClass: classes for the loading icon, will show up when items are loading, if left empty, no icon will show up
+- loadMoreClass: classes for the load more icon, will show up at the end of the list if for some reason intersection observer is not working, clicking on it loads more data. if left empty, no icon will show up.
 - noMoreMessage: the message to be shown at the end of the list when there is no more data. default is : "No more data..." OPTIONAl
+- @itemsFn: In this function you have to provide the method of getting more data from the server, or any other place.
+  This is the place where you have to do any modifications to the returned data (ex.: make a vuex store commit, map values to new ones etc.) and push your data
+  to the array you specified in the list property be it in the component, or vuex, or anywhere accessible. Also, don't forget to set your listChanged property to true at the end of the function.
+- @updated: Set your listChanged boolean property to false here
 
 *Template slot:*
 
 The infinite scroller component returns each individual item in slot-scope
 You have to provide :key as index and :id as item-${index}
-If you want your data to be filled only for onscreen items wrap it in a div and check for visiblity  // TODO: do this inside the component
+If you want your data to be filled only for onscreen items wrap it in a div and check for visiblity
 
 ```html
-<template slot-scope="{ item, index }">
+    <template slot-scope="{ item, index }">
         <q-card
-          :style="`width:${itemWidth}px; height:${itemHeight}px;`"
+          :style="`width:${itemWidth}px; height:500px;`"
           class="q-ma-sm"
-          :key="index"   <--- required
-          :id="`item-${index}`" <--- required
+          :key="index"
+          :id="`item-${index}`"
         >
-          <div v-if="item.isVisible">  <---- with this, only onscreen items will be filled with data
+          <div v-if="item.isVisible">
             <p class="text-center">{{ item.label }}</p>
             <q-img basic width="300px" :src="item.imgSrc" alt="macskás kép" />
           </div>
         </q-card>
-      </template>    
+      </template> 
 ```
 ## Usage example
 ```html
-<template>
-  <q-page>
     <intersection-scroller
       :list="bigList"
-      :itemsFn="getItems"
-      :setVisible="setVisiblity"
-      containerClass="row justify-center"
-      loaderClass="row justify-center q-mt-lg"
       :itemsCount="maxLength"
       :itemWidth="itemWidth"
-      :itemHeight="itemHeight"
       :itemOffset="itemOffset"
       :itemsPerPage="pageCount"
-      :noMoreMessage="noMoreMsg",
+      :listChanged="listChanged"
       indexBy="label"
+      containerClass="row justify-center"
+      iconContainerClass="row justify-center q-mt-lg"
+      loadingIconClass="fas fa-spinner fa-2x fa-pulse"
+      loadMoreClass="fas fa-chevron-down fa-2x bounce"
+      :noMoreMessage="noMoreMsg"
+      @itemsFn="getItems"
+      @updated="listChanged = false"
     >
       <template slot-scope="{ item, index }">
         <q-card
-          :style="`width:${itemWidth}px; height:${itemHeight}px;`"
+          :style="`width:${itemWidth}px; height:500px;`"
           class="q-ma-sm"
           :key="index"
           :id="`item-${index}`"
@@ -96,28 +97,26 @@ If you want your data to be filled only for onscreen items wrap it in a div and 
         </q-card>
       </template>
     </intersection-scroller>
-  </q-page>
-</template>
 ```
 
 ```
 <script>
 ```
 ```js
-import intersectionScroller from "intersection-scroller-vue";
+import IntersectionScroller from "intersection-scroller-vue";
 export default {
   components: {
-    intersectionScroller
+    IntersectionScroller
   },
   data() {
     return {
       bigList: [],
       maxLength: 120,
       itemWidth: 300,
-      itemHeight: 500,
       itemOffset: 100,
       pageCount: 12,
-      noMoreMsg: "No more items..."
+      noMoreMsg: "No more items...",
+      listChanged: false
     };
   },
   methods: {
@@ -129,26 +128,15 @@ export default {
       return url + randomNum();
     },
     async getItems() {
-      const newData = [];
       const length = this.bigList.length;
       for (let i = 0; i < this.pageCount; i++) {
-        newData.push({
-          label: `CARD ${i + length}`,
-          isVisible: true,
-          imgSrc: this.getCatImg()
-        });
         this.bigList.push({
           label: `CARD ${i + length}`,
           isVisible: true,
           imgSrc: this.getCatImg()
         });
       }
-      return newData;
-    },
-    setVisiblity(elements) {
-      elements.forEach(el => {
-        this.bigList[el.index].isVisible = el.isVisible;
-      });
+      this.listChanged = true;
     }
   }
 };
