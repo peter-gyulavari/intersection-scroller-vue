@@ -69,11 +69,6 @@ export default {
       required: false,
       default: "id"
     },
-    bodyScroll: {
-      type: Boolean,
-      required: false,
-      default: true
-    },
     listChanged: {
       type: Boolean,
       required: true
