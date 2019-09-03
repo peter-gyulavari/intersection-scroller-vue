@@ -3,7 +3,7 @@ Infinite scrolling implemented with intersection observer instead of scroll even
 "The Intersection Observer API provides a way to asynchronously observe changes in the intersection of a target element with an ancestor element or with a top-level document's viewport."
  You can read more about Intersection Observer on the following link -> (https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
 
-The module's aim is to enable loading paginated data from your server, displaying it in a grid based layout, only filling your elements with data that are onscreen.
+This package aims to enable loading paginated data, displaying it in a grid based layout, only filling your elements with data that are onscreen.
 
 *Features:*
 
