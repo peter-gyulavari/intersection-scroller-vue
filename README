@@ -26,23 +26,25 @@ $ npm install intersection-scroller-vue
 
 ## Usage
 *Properties:*
-    
-- list: This property is your array where your data is
-- itemsCount: the max count of the data
-- itemWidth: the width of each individual element in the scoped slot.
-- itemOffset: This property is used so the component can calculate how many items should be in a row, and recalculate it when the screen size changes. The intersection observer has to know the last row so it can load more data thus this step is required. If items / rows showing incorrectly or disappearing, this is the property you should play around with. If you don't have any padding, margin this can be set to 0, otherwise experimenting with it is recommended.
-- itemsPerPage: You have to provide how many items you have in your list (eg.: max count of rows in a database table if getting data from a server)
-- listChanged: Boolean property which should be false first, and when your data changes you have to set it true
-- indexBy: name of the property in your list to find index by, should be unique, default: "id"
-- containerClass: classes the scrollContainer div should have, OPTIONAL
-- iconContainerClass: classes the container below your scrollingContainer should have
-- loadingIconClass: classes for the loading icon, will show up when items are loading, if left empty, no icon will show up
-- loadMoreClass: classes for the load more icon, will show up at the end of the list if for some reason intersection observer is not working, clicking on it loads more data. if left empty, no icon will show up.
-- noMoreMessage: the message to be shown at the end of the list when there is no more data. default is : "No more data..." OPTIONAl
-- @itemsFn: In this function you have to provide the method of getting more data from the server, or any other place.
-  This is the place where you have to do any modifications to the returned data (ex.: make a vuex store commit, map values to new ones etc.) and push your data
+- list: [ARRAY] [REQUIRED] This property is your array where your data is
+- itemsCount: [NUMBER] [REQUIRED]  the max count of the data
+- itemWidth: [NUMBER] [REQUIRED] the width of each individual element in the scoped slot.
+- itemOffset: [NUMBER] [NOT REQUIRED] [DEF: 100] This property is used so the component can calculate how many items should be in a row, and recalculate it when the screen size changes. The intersection observer has to know the last row so it can load more data thus this step is required. If items / rows showing incorrectly or disappearing, this is the property you should play around with. If you don't have any padding, margin this can be set to 0, otherwise experimenting with it is recommended.
+- itemsPerPage: [NUMBER] [REQUIRED] You have to provide how many items you have in your list (eg.: max count of rows in a database table if getting data from a server)
+- listChanged: [BOOLEAN] [REQUIRED] Boolean property which should be false first, and when your data changes you have to set it true
+- indexBy: [STRING] [NOT REQUIRED] [DEF: id] name of the property in your list to find index by, should be unique, default: "id"
+- containerClass: [STRING] [NOT REQUIRED] [DEF: ""] classes the scrollContainer div should have,
+- iconContainerClass: [STRING] [NOT REQUIRED] [DEF: ""] classes the container below your scrollingContainer should have
+- loadingIconClass: [STRING] [NOT REQUIRED] [DEF: ""] classes for the loading icon, will show up when items are loading, if left empty, no icon will show up
+- loadMoreClass: [STRING] [NOT REQUIRED] [DEF: ""] classes for the load more icon, will show up at the end of the list if for some reason intersection observer is not working, clicking on it loads more data. if left empty, no icon will show up.
+- noMoreMessage: [STRING] [NOT REQUIRED] [DEF: "No more data..."] the message to be shown at the end of the list when there is no more data. default is : "No more data..."
+
+*Events*
+- @itemsFn: In this event you have to provide the function of getting more data from the server, or any other place.
+  This is the place where you have to do any modifications to the returned data (ex.: make a vuex store commit, map values to new ones etc.) and add your data
   to the array you specified in the list property be it in the component, or vuex, or anywhere accessible. Also, don't forget to set your listChanged property to true at the end of the function.
 - @updated: Set your listChanged boolean property to false here
+
 
 *Template slot:*
 
