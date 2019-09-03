@@ -93,7 +93,9 @@ export default {
       if (this.listChanged) {
         this.loading = false;
         const differences = this.list.filter(e => {
-          return !this.innerList.some(item => item._id === e._id);
+          return !this.innerList.some(
+            item => item[this.indexBy] === e[this.indexBy]
+          );
         });
         this.innerList.push(...differences);
 
