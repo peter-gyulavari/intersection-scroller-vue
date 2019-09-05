@@ -50,11 +50,6 @@ export default {
       type: Number,
       required: true
     },
-    itemOffset: {
-      type: Number,
-      required: false,
-      default: 100
-    },
     itemsPerPage: {
       type: Number,
       required: true
@@ -72,6 +67,11 @@ export default {
     listChanged: {
       type: Boolean,
       required: true
+    },
+    itemsGap: {
+      type: Number,
+      required: false,
+      default: 0
     }
   },
   data() {
@@ -83,6 +83,7 @@ export default {
       loading: false
     };
   },
+
   watch: {
     listChanged: function() {
       if (this.listChanged) {
@@ -94,22 +95,23 @@ export default {
         });
         this.innerList.push(...differences);
 
-        this.$nextTick(() => {
-          const indexes = [];
-          const itemsPerRow = this.getItemsPerRow();
+        const indexes = [];
+        const itemsPerRow = this.getItemsPerRow();
 
-          differences.forEach(element => {
-            const index = this.innerList.findIndex(
-              el => el[this.indexBy] === element[this.indexBy]
-            );
-            indexes.push(index);
-          });
+        differences.forEach(element => {
+          const index = this.innerList.findIndex(
+            el => el[this.indexBy] === element[this.indexBy]
+          );
+          indexes.push(index);
+        });
+        this.$emit("updated");
+
+        this.$nextTick(() => {
           indexes.forEach(index => {
             if (index % itemsPerRow === 0) {
               this.observer.observe(document.querySelector(`#item-${index}`));
             }
           });
-          this.$emit("updated");
         });
       }
     }
@@ -141,7 +143,7 @@ export default {
               this.hasMoreToLoad()
             ) {
               this.loading = true;
-              this.$emit("itemsFn");
+              this.$emit("itemsFn", this.getItemsPerRow());
             }
 
             const shouldBeVisible = [];
@@ -176,8 +178,7 @@ export default {
       const allRows = Math.ceil(itemsCount / itemsPerRow);
       const currentRow = Math.floor((index * allRows) / itemsCount);
       const isLastLoadedRow =
-        Math.ceil(this.innerList.length / itemsPerRow) - 1 === currentRow;
-
+        Math.ceil(this.innerList.length / itemsPerRow) - 1 === currentRow + 1;
       const allPages = Math.ceil(itemsCount / this.itemsPerPage);
       const allRowsOnPage = Math.ceil(this.itemsPerPage / itemsPerRow);
       const nonIndexCurrentRow = currentRow + 1;
@@ -197,8 +198,12 @@ export default {
       const scrollContainer = this.$refs.scrollContainer;
       const width = scrollContainer.offsetWidth;
       if (width) {
-        itemsPerRow = Math.floor((width - this.itemOffset) / this.itemWidth);
+        itemsPerRow = Math.floor(width / this.itemWidth);
       }
+
+      const trueWidth = width - itemsPerRow * this.itemsGap;
+
+      itemsPerRow = Math.floor(trueWidth / this.itemWidth);
       return itemsPerRow;
     },
     setVisible(elements) {
@@ -207,12 +212,11 @@ export default {
       });
     }
   },
-  created() {
-    this.loading = true;
-    this.$emit("itemsFn");
-  },
+
   mounted() {
     try {
+      this.loading = true;
+      this.$emit("itemsFn", this.getItemsPerRow());
       this.initObserver();
     } catch (error) {
       throw error;
