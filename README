@@ -29,8 +29,8 @@ $ npm install intersection-scroller-vue
 - list: [ARRAY] [REQUIRED] This property is your array where your data is
 - itemsCount: [NUMBER] [REQUIRED]  the max count of the data
 - itemWidth: [NUMBER] [REQUIRED] the width of each individual element in the scoped slot.
-- itemOffset: [NUMBER] [NOT REQUIRED] [DEF: 100] This property is used so the component can calculate how many items should be in a row, and recalculate it when the screen size changes. The intersection observer has to know the last row so it can load more data thus this step is required. If items / rows showing incorrectly or disappearing, this is the property you should play around with. If you don't have any padding, margin this can be set to 0, otherwise experimenting with it is recommended.
-- itemsPerPage: [NUMBER] [REQUIRED] You have to provide how many items you have in your list (eg.: max count of rows in a database table if getting data from a server)
+- itemsGap: [NUMBER] [NOT REQUIRED] [DEF: 0]: the horizontal space between your elements if they have any. el / row is calculated based on this too, so it's important to set it.
+- itemsPerPage: [NUMBER] [REQUIRED] How many items you load / page. Should be divisible with items / row without remainder.
 - listChanged: [BOOLEAN] [REQUIRED] Boolean property which should be false first, and when your data changes you have to set it true
 - indexBy: [STRING] [NOT REQUIRED] [DEF: id] name of the property in your list to find index by, should be unique, default: "id"
 - containerClass: [STRING] [NOT REQUIRED] [DEF: ""] classes the scrollContainer div should have,
@@ -43,6 +43,7 @@ $ npm install intersection-scroller-vue
 - @itemsFn: In this event you have to provide the function of getting more data from the server, or any other place.
   This is the place where you have to do any modifications to the returned data (ex.: make a vuex store commit, map values to new ones etc.) and add your data
   to the array you specified in the list property be it in the component, or vuex, or anywhere accessible. Also, don't forget to set your listChanged property to true at the end of the function.
+  itemsPerRow is emitted with this event, you can recalculate itemsPerPage with this.
 - @updated: Set your listChanged boolean property to false here
 
 
@@ -69,12 +70,12 @@ If you want your data to be filled only for onscreen items wrap it in a div and 
 ```
 ## Usage example
 ```html
-    <intersection-scroller
+   <intersection-scroller
       :list="bigList"
       :itemsCount="maxLength"
       :itemWidth="itemWidth"
-      :itemOffset="itemOffset"
       :itemsPerPage="pageCount"
+      :items-gap="itemsGap"
       :listChanged="listChanged"
       indexBy="label"
       containerClass="row justify-center"
@@ -82,13 +83,13 @@ If you want your data to be filled only for onscreen items wrap it in a div and 
       loadingIconClass="fas fa-spinner fa-2x fa-pulse"
       loadMoreClass="fas fa-chevron-down fa-2x bounce"
       :noMoreMessage="noMoreMsg"
-      @itemsFn="getItems"
+      @itemsFn="getItems($event)"
       @updated="listChanged = false"
     >
       <template slot-scope="{ item, index }">
         <q-card
           :style="`width:${itemWidth}px; height:500px;`"
-          class="q-ma-sm"
+          class="q-ml-sm q-mt-sm"
           :key="index"
           :id="`item-${index}`"
         >
@@ -118,7 +119,8 @@ export default {
       itemOffset: 100,
       pageCount: 12,
       noMoreMsg: "No more items...",
-      listChanged: false
+      listChanged: false,
+      itemsGap: 8
     };
   },
   methods: {
@@ -129,8 +131,10 @@ export default {
       const url = "https://source.unsplash.com/collection/139386/100x100/?sig=";
       return url + randomNum();
     },
-    async getItems() {
+    async getItems(itemsPerRow) {
       const length = this.bigList.length;
+      this.pageCount = this.getPageCount(itemsPerRow);
+      this.maxLength = this.pageCount * 10;
       for (let i = 0; i < this.pageCount; i++) {
         this.bigList.push({
           label: `CARD ${i + length}`,
@@ -139,6 +143,9 @@ export default {
         });
       }
       this.listChanged = true;
+    },
+    getPageCount(itemsPerRow) {
+      return itemsPerRow < 5 ? 12 : itemsPerRow === 5 ? 15 : itemsPerRow * 2;
     }
   }
 };
