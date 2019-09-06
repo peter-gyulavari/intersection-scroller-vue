@@ -88,22 +88,18 @@ export default {
     listChanged: function() {
       if (this.listChanged) {
         this.loading = false;
-        const differences = this.list.filter(e => {
-          return !this.innerList.some(
-            item => item[this.indexBy] === e[this.indexBy]
-          );
-        });
-        this.innerList.push(...differences);
 
         const indexes = [];
+        const length = this.innerList.length;
+        const diff = this.list.length - this.innerList.length;
+        for (let i = length; i < diff + length; i++) {
+          const element = this.list[i];
+          this.innerList.push(element);
+          indexes.push(i);
+        }
+
         const itemsPerRow = this.getItemsPerRow();
 
-        differences.forEach(element => {
-          const index = this.innerList.findIndex(
-            el => el[this.indexBy] === element[this.indexBy]
-          );
-          indexes.push(index);
-        });
         this.$emit("updated");
 
         this.$nextTick(() => {
