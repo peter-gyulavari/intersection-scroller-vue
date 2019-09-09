@@ -78,7 +78,6 @@ export default {
     return {
       observer: null,
       lastItemsPerRow: null,
-      hasMore: true,
       innerList: [],
       loading: false
     };
@@ -112,14 +111,13 @@ export default {
       }
     }
   },
-  methods: {
-    hasMoreToLoad() {
+  computed: {
+    hasMore() {
       const hasMore = this.innerList.length !== this.itemsCount;
-
-      if (!hasMore) this.hasMore = false;
-
-      return hasMore;
-    },
+      return hasMore ? true : false;
+    }
+  },
+  methods: {
     initObserver() {
       const options = {};
 
@@ -136,7 +134,7 @@ export default {
             if (
               getRow.isLastLoadedRow &&
               entry.isIntersecting &&
-              this.hasMoreToLoad()
+              this.hasMore
             ) {
               this.loading = true;
               this.$emit("itemsFn", this.getItemsPerRow());
