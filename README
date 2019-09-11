@@ -32,12 +32,12 @@ $ npm install intersection-scroller-vue
 - itemsGap: [NUMBER] [NOT REQUIRED] [DEF: 0]: the horizontal space between your elements if they have any. el / row is calculated based on this too, so it's important to set it.
 - itemsPerPage: [NUMBER] [REQUIRED] How many items you load / page. Should be divisible with items / row without remainder.
 - listChanged: [BOOLEAN] [REQUIRED] Boolean property which should be false first, and when your data changes you have to set it true
-- indexBy: [STRING] [NOT REQUIRED] [DEF: id] name of the property in your list to find index by, should be unique, default: "id"
+- indexBy: [STRING] [NOT REQUIRED] [DEF: id] name of the property in your list to find index by, should be unique.
 - containerClass: [STRING] [NOT REQUIRED] [DEF: ""] classes the scrollContainer div should have,
 - iconContainerClass: [STRING] [NOT REQUIRED] [DEF: ""] classes the container below your scrollingContainer should have
 - loadingIconClass: [STRING] [NOT REQUIRED] [DEF: ""] classes for the loading icon, will show up when items are loading, if left empty, no icon will show up
 - loadMoreClass: [STRING] [NOT REQUIRED] [DEF: ""] classes for the load more icon, will show up at the end of the list if for some reason intersection observer is not working, clicking on it loads more data. if left empty, no icon will show up.
-- noMoreMessage: [STRING] [NOT REQUIRED] [DEF: "No more data..."] the message to be shown at the end of the list when there is no more data. default is : "No more data..."
+- noMoreMessage: [STRING] [NOT REQUIRED] [DEF: null] the message to be shown at the end of the list when there is no more data.
 
 *Events*
 - @itemsFn: In this event you have to provide the function of getting more data from the server, or any other place.
