@@ -57,7 +57,7 @@ export default {
     noMoreMessage: {
       type: String,
       required: false,
-      default: "No more data..."
+      default: null
     },
     indexBy: {
       type: String,
