@@ -6,7 +6,7 @@
 
     <div :class="iconContainerClass">
       <i v-if="loading" :class="loadingIconClass"></i>
-      <i v-if="hasMore && !loading" :class="loadMoreClass" @click="$emit('itemsFn')" />
+      <i v-if="hasMore && !loading" :class="loadMoreClass" @click="$emit('itemsFn', getItemsPerRow())" />
       <p v-if="!hasMore && !loading">{{noMoreMessage}}</p>
     </div>
   </div>
