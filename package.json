@@ -11,7 +11,7 @@
   "dependencies": {
     "core-js": "^2.6.5",
     "intersection-observer": "^0.7.0",
-    "vue": "^2.6.11",
+    "vue": "^3.0.0",
     "vue-template-compiler": "^2.6.11"
   },
   "main": "./src/intersection-scroller.vue",
